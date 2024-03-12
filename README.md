@@ -7,7 +7,7 @@ DROP-DEEP is a polygenic risk score tool that based on dimensionality reduction 
 
 3.	If you have large data frame, you have to split your data to chanks, and to load each time around 1000 samples:
 
-python3 split_each_chr_to_chunks.py
+python3 split_each_chr_to_chunks.py input_file_name output_file_name
 
 4.	Applay our PCA transformer on your data:
    
