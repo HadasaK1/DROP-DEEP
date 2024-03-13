@@ -7,10 +7,10 @@ Step 6 is for the training and the test set together.
 
 1.	The first step is to create the plink bed, bim, fam files, filter the samples and the SNPs according to your pre-processing parameters. Splite here your bed files to training and test files in order to train your NN. 
 
-2.	Create covariant matrix.
+2.	Create covariant matrix and phenotype file.
 
-  	the covarient matrix has to be MinMax scaled. 
-   The two first columns has to be "FID' and "IID".
+   The covarient matrix has to be MinMax scaled. 
+   The two first columns of the covarient matrix and the phenotype file has to be "FID' and "IID".
 
 3.	If you have large data frame, you have to split your data to chanks, and to load each time around 1000 samples:
     ```
@@ -39,15 +39,15 @@ Step 6 is for the training and the test set together.
 
 7.	Match the phenotype files (the Y files) to the feature files (the X files).
       ```
-      Python3 match_pheno_IDs.py cov_file input_files_dir merged_output_file_name
+      Python3 match_pheno_IDs.py pheno_file train_X_files test_X_files output_path
       ```
 9.	Run NN on the PCA features.
 
    for binary phenotypes:
       ```
-      python3 NN.py
+      python3 NN_for_binary_pheno.py
       ```
     for continues phenotypes:
     ```
-      python3 NN_for_binary_pheno.py
+      python3 NN_for_linear_pheno.py
     ```
