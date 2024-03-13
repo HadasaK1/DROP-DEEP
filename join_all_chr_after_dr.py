@@ -11,10 +11,6 @@ def join(X_file_name_beginning, chunk_size, gene_output_file, cov_df,X_file_name
         while True:
             try:
                 for chr in range(1, 23):
-                    # if chr <= 4:
-                    #     chunk_size=500
-                    # else:
-                    #     chunk_size=1000
                     print(chr)
                     dim_remove_file = X_file_name_beginning + str(chr) +  X_file_name_end
                     #dim_remove_file = dim_remove_file
@@ -45,31 +41,20 @@ def join(X_file_name_beginning, chunk_size, gene_output_file, cov_df,X_file_name
                 
  
 # handle covariate
-DRM=sys.argv[1]
+cov_file=sys.argv[1]
 rep=sys.argv[2]
 
-with open('/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/cov_matrix/rep1'
-          +'/cov_matrix_MinMax_scaled_no_missing.pkl', "rb") as fh:
-#with open('/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/cov_matrix/rep'+rep
-#          +'/cov_matrix_MinMax_scaled_no_missing.pkl', "rb") as fh:
-  cov_df = pickle.load(fh)
-#cov_df = pd.read_pickle('/cs/snapless/michall/hadasak/improve_PRS/cov_matrix/cov_matrix_MinMax_scaled_no_missing.pkl')
-cov_df.rename(columns={"#FID":"FID"},inplace=True)
-print(cov_df.head(1))
-chunk_size=1000
+with open(cov_file, "rb") as fh:
+    cov_df = pickle.load(fh)
+    cov_df.rename(columns={"#FID":"FID"},inplace=True)
+    print(cov_df.head(1))
+    chunk_size=1000
 
 if DRM=="PCA":
     X_train_name_beginning = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_train_1k_chunks_PCA_dim_remove_no_missing/rep'+rep+"/chr_"
     X_test_name_beginning = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_test_1k_chunks_PCA_dim_remove_no_missing/rep'+rep+"/chr_"
     union_train_gene_output_file = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_train_1k_chunks_PCA_dim_remove_no_missing/rep' + rep + "/X_train_all_chr_MinMax_cov_MinMax.pkl"
     union_test_gene_output_file = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_test_1k_chunks_PCA_dim_remove_no_missing/rep'+rep+"/X_test_all_chr_MinMax_cov_MinMax.pkl"
-
-if DRM=="Autoencoder":
-  
-    X_train_name_beginning = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/X_train_1k_chunks_dim_remove_no_missing_500_epochs/rep"+rep+"/chr_"
-    X_test_name_beginning = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/X_test_1k_chunks_dim_remove_no_missing_500_epochs/rep"+rep+"/chr_"
-    union_train_gene_output_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/X_train_1k_chunks_dim_remove_no_missing_500_epochs/rep"+rep+"/X_train_all_chr_MinMax_cov_MinMax.pkl"
-    union_test_gene_output_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/X_test_1k_chunks_dim_remove_no_missing_500_epochs/rep"+rep+"/X_test_all_chr_MinMax_cov_MinMax.pkl"
 
 file_name_end="_MinMax_scaled.pkl"
 
