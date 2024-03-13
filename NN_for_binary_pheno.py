@@ -51,27 +51,8 @@ def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs
                         X_batch = X_batch.drop(['FID'], axis=1)
                         y_batch = pickle.load(file_handle2)
                         y_batch = y_batch.drop(['FID'], axis=1)
-                        print("y_batch_with_drop")
-                        print(y_batch)
-                        print("Columns in y_batch:", y_batch.columns)
-                        print("Number of columns in y_batch:", len(y_batch.columns))
-                        print("type:", y_batch.iloc[:,0].dtype)
                         y_batch.iloc[:,0] = y_batch.iloc[:,0].astype(int)
-                        print("type:", y_batch.iloc[:,0].dtype)
-
-                        print("y_batch")
-                        print(y_batch)
-
-                        print("X_batch_with_drop")
-                        print(X_batch)
-                        print("Columns in X_batch:", X_batch.columns)
-                        print("Number of columns in X_batch:", len(X_batch.columns))
-                        print("type:", X_batch.iloc[:,0].dtype)
                         X_batch.iloc[:,0] = X_batch.iloc[:,0].astype(int)
-                        print("type:", X_batch.iloc[:,0].dtype)
-
-                        print("X_batch")
-                        print(X_batch)
 
                         if epoch == 1 and batch_num == 1 and model==None:
                             model = build_model(X_batch)
@@ -98,7 +79,7 @@ def plot_loss(loss, val_loss,num_epochs_to,num_epochs_from):
     fig = plt.figure()
     plt.plot(loss)
     plt.plot(val_loss)
-    plt.title('SNP selection with DNN for '+pheno_name) #change!!!!!!!!!!!!!!!!!!!!!!
+    plt.title('PROP-DEEP')
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
@@ -128,9 +109,7 @@ def create_validation_set(X_train_chunks_file, y_train_chunks_file):
     with open(y_train_chunks_file, 'rb') as y_file_handle:
         y_val = pd.read_pickle(y_file_handle)
         y_val = y_val.drop(['FID'], axis=1)
-        print("type:", y_val.iloc[:,0].dtype)
         y_val.iloc[:,0] = y_val.iloc[:,0].astype(int)
-        print("type:", y_val.iloc[:,0].dtype)
     return X_val, y_val
         
   
@@ -140,29 +119,11 @@ import os
 
 ###################################begining################
 start_time = time.time()
-pheno_name = sys.argv[1]
-rep = str(sys.argv[2])
-DRM = sys.argv[3]
-
-
-
-# files
-if DRM == "PCA":
-    # train
-    X_train_chunks_file = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_train_1k_chunks_PCA_dim_remove_no_missing/rep' + rep + "/" + pheno_name + "_X_train_match_to_pheno_MinMax_cov_MinMax.pkl"
-    X_test_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_test_1k_chunks_PCA_dim_remove_no_missing/rep" + rep + "/" + pheno_name + "_X_test_match_to_pheno_MinMax_cov_MinMax.pkl"
-    y_train_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/Y_files/rep" + rep + "/" + pheno_name + "_Y_train_1k_chunks_no_missing.pkl"
-    y_test_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/Y_files/rep" + rep + "/" + pheno_name + "_Y_test_1k_chunks_no_missing.pkl"
-    output_path = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/NN_with_PCA/" + pheno_name + "/rep" + rep + "/NN_0.2_0.1_dropout_0.1_relu_Adam0.0000001_batch_size_50_genes_MinMax_cov_MinMax/"
-
-
-if DRM == "Autoencoder":
-    print("Autoencoder")
-    X_train_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/X_train_1k_chunks_dim_remove_no_missing_500_epochs/rep" + rep + "/" + pheno_name + "_X_train_match_to_pheno_MinMax_cov_MinMax.pkl"
-    X_test_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/X_test_1k_chunks_dim_remove_no_missing_500_epochs/rep" + rep + "/" + pheno_name + "_X_test_match_to_pheno_MinMax_cov_MinMax.pkl"
-    y_train_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/Y_files/rep" + rep + "/" + pheno_name + "_Y_train_1k_chunks_no_missing.pkl"
-    y_test_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/Y_files/rep" + rep + "/" + pheno_name + "_Y_test_1k_chunks_no_missing.pkl"
-    output_path = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/NN_with_Autoencoder/" + pheno_name + "/rep" + rep + "/NN_0.2_0.1_dropout_0.1_relu_Adam0.0000001_batch_size_50_genes_MinMax_cov_MinMax/"
+X_train_chunks_file = sys.argv[1]
+X_test_chunks_file= sys.argv[2]
+y_train_chunks_file= sys.argv[3]
+y_test_file = sys.argv[4]
+output_path = sys.argv[5]
 
 if not os.path.exists(output_path):
     os.makedirs(output_path)
@@ -204,11 +165,9 @@ predictions_df=predictions_df.astype(float)
 y_test = pd.read_pickle(y_test_file)
 y_test = y_test.drop(['FID'], axis=1)
 y_test=y_test.astype(int)
-print(y_test.head(20))
 
 print('log_loss=', log_loss(y_test,predictions))
 fpr, tpr, thresholds = roc_curve(y_test, predictions)
 print('roc_auc_score=',roc_auc_score(y_test,predictions))
 print('average_precision_score =',average_precision_score(y_test, predictions))
-#plot_roc_curve(fpr, tpr)
 
