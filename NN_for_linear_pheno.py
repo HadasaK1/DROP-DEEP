@@ -57,8 +57,7 @@ def build_model(batch,first_layer_units=0.2,second_layer_units=0.1,dropout=0.1,l
     return model
 
 
-def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs_to, X_val, y_val,
-           model=None):
+def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs_to, X_val, y_val,pheno_name, model=None):
     loss = []
     val_loss = []
     for epoch in range(num_epochs_from, num_epochs_to + 1):
@@ -105,15 +104,15 @@ def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs
             model.save(save_to, num_epochs_to)
         loss.extend(history.history['loss'])
         val_loss.extend(history.history['val_loss'])
-    plot_loss(loss, val_loss, num_epochs_to, num_epochs_from)
+    plot_loss(loss, val_loss, num_epochs_to, num_epochs_from,pheno_name)
     return model
 
 
-def plot_loss(loss, val_loss, num_epochs_to, num_epochs_from):
+def plot_loss(loss, val_loss, num_epochs_to, num_epochs_from,pheno_name):
     fig = plt.figure()
     plt.plot(loss)
     plt.plot(val_loss)
-    plt.title('DROP DEEP')
+    plt.title('DROP-DEEP '+pheno_name)
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
