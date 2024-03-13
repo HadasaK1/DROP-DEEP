@@ -37,7 +37,7 @@ def build_model(batch):
     return model
 
 
-def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs_to, X_val, y_val, start_time, model=None):
+def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs_to, X_val, y_val, start_time,pheno_name, model=None):
     loss = []
     val_loss = []
     for epoch in range(num_epochs_from, num_epochs_to + 1):
@@ -73,14 +73,14 @@ def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs
         loss.extend(history.history['loss'])
         val_loss.extend(history.history['val_loss'])
         
-    plot_loss(loss, val_loss, num_epochs_to, num_epochs_from)
+    plot_loss(loss, val_loss, num_epochs_to, num_epochs_from,pheno_name)
     return model
     
-def plot_loss(loss, val_loss,num_epochs_to,num_epochs_from):
+def plot_loss(loss, val_loss,num_epochs_to,num_epochs_from,pheno_name):
     fig = plt.figure()
     plt.plot(loss)
     plt.plot(val_loss)
-    plt.title('PROP-DEEP')
+    plt.title('PROP-DEEP '+pheno_name)
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
@@ -125,6 +125,8 @@ X_test_chunks_file= sys.argv[2]
 y_train_chunks_file= sys.argv[3]
 y_test_file = sys.argv[4]
 output_path = sys.argv[5]
+pheno_name = sys.argv[6]
+
 
 if not os.path.exists(output_path):
     os.makedirs(output_path)
@@ -147,6 +149,7 @@ model = fit_NN(x_train_chunks_file = X_train_chunks_file,
                X_val = X_val,
                y_val = y_val,
                start_time = start_time,
+               pheno_name=pheno_name,
                model = None)
 
 #-----------for predict only----------
