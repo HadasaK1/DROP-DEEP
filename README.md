@@ -22,16 +22,17 @@ Step 6 is for the training and the test set together.
          https://drive.google.com/drive/folders/1oukhU_B4nM5kH9z2BxC81Kfn4kp05JAm?usp=drive_link
    
 5.	 Applay our PCA transformer on your data:
+   
     ```
       python3 PCA_dimension_reduction.py chanks_file output_pca_file pca_transformer
   	  ```
 
-6.	Scale the PCA data (MinMax scale):
+7.	Scale the PCA data (MinMax scale):
      ```
       python3 scale_genes.py PCA_file_training_set PCA_file_test_set scaled_file_training_set scaled_file_test_set
       ```
 
-7.	Join the 22 chromosomes to one cohort:
+8.	Join the 22 chromosomes to one cohort:
     ```
       Python3 join_all_chr_after_dr.py cov_file input_files_dir merged_output_file_name
      ```
@@ -39,6 +40,12 @@ Step 6 is for the training and the test set together.
 7.	Validate that the samples in your phenotypes file are exactly the same in the features file.
 
 8.	Run NN on the PCA features.
-   
+
+   for binary phenotypes:
+   ```
       python3 NN.py
+  ```
+    for continues phenotypes:
+    ```
       python3 NN_for_binary_pheno.py
+```
