@@ -1,27 +1,29 @@
 # DROP-DEEP
 DROP-DEEP is a polygenic risk score tool that based on dimensionality reduction with principal component analysis (PCA) and a deep neural network prediction model (DNN).
 
+steps 1-7 should be to be done for each of the chromosomes separately.
+
 1.	The first step is to create the plink bed, bim, fam files, filter the samples and the SNPs according to your pre-processing parameters. Splite here your bed files to training and test files in order to train your NN. 
 
 2.	Create covariant matrix.
 
 3.	If you have large data frame, you have to split your data to chanks, and to load each time around 1000 samples:
 
-      python3 split_each_chr_to_chunks.py input_file_name output_file_name
+      python3 split_each_chr_to_chunks.py plink_file_name_no_suffix output_chancks_file_name
 
 4.	Download the PCA transformers files from this link:
 
+         https://drive.google.com/drive/folders/1oukhU_B4nM5kH9z2BxC81Kfn4kp05JAm?usp=drive_link
    
+6.	 Applay our PCA transformer on your data:
    
-5.	 Applay our PCA transformer on your data:
-   
-      python3 PCA_dimension_reduction.py 
+      python3 PCA_dimension_reduction.py chanks_file output_pca_file pca_transformer
 
-6.	Scale the PCA data (MinMax scale):
+7.	Scale the PCA data (MinMax scale):
    
       python3 scale_genes.py PCA
 
-7.	Join the 22 chromosomes to one cohort:
+8.	Join the 22 chromosomes to one cohort:
    
       Python3 join_all_chr_after_dr.py PCA
 
