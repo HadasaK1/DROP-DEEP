@@ -2,32 +2,33 @@ import pandas as pd
 from sklearn.preprocessing import StandardScaler
 import sys
 import pickle5 as pickle
+from os import walk
 
 
-def join(X_file_name_beginning, chunk_size, gene_output_file, cov_df,X_file_name_end):
+
+def join(input_files_dir, chunk_size, output_file_name, cov_df):
     number_samples = 0 
-    with open(gene_output_file, 'wb') as gene_output_file_handle:
+    first_chro=True
+    filenames = next(walk(input_files_dir), (None, None, []))[2]  # [] if no file
+    with open(output_file_name, 'wb') as gene_output_file_handle:
         this_chunk = 1
         while True:
             try:
-                for chr in range(1, 23):
-                    print(chr)
-                    dim_remove_file = X_file_name_beginning + str(chr) +  X_file_name_end
-                    #dim_remove_file = dim_remove_file
-                    with open(dim_remove_file, 'rb') as dim_remove_file_handle:
+                for file in filenames:
+                    print(file)
+                    with open(file, 'rb') as chr_file_handle:
                         for c in range(1,this_chunk+1):
-                            print(c)
-                            print(pickle.load(dim_remove_file_handle))
-                            batch = pickle.load(dim_remove_file_handle)
+                            batch = pickle.load(chr_file_handle)
                         ID = batch['FID']
                         batch = batch.drop(['FID'], axis=1)
                         suffix = '_chr'+str(chr)
                         batch = batch.add_suffix(suffix)
                         batch['FID'] = ID
-                        if chr == 1:
+                        if first_chro == True:
                             df = pd.merge(cov_df, batch, on='FID')
                         else:
                             df = pd.merge(df, batch, on='FID')
+                            first_chro = False
                         
                 pickle.dump(df, gene_output_file_handle, protocol=4)
                 this_chunk = this_chunk + 1
@@ -42,7 +43,9 @@ def join(X_file_name_beginning, chunk_size, gene_output_file, cov_df,X_file_name
  
 # handle covariate
 cov_file=sys.argv[1]
-rep=sys.argv[2]
+input_files_dir=sys.argv[2]
+output_file_name=sys.argv[3]
+
 
 with open(cov_file, "rb") as fh:
     cov_df = pickle.load(fh)
@@ -50,18 +53,5 @@ with open(cov_file, "rb") as fh:
     print(cov_df.head(1))
     chunk_size=1000
 
-if DRM=="PCA":
-    X_train_name_beginning = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_train_1k_chunks_PCA_dim_remove_no_missing/rep'+rep+"/chr_"
-    X_test_name_beginning = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_test_1k_chunks_PCA_dim_remove_no_missing/rep'+rep+"/chr_"
-    union_train_gene_output_file = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_train_1k_chunks_PCA_dim_remove_no_missing/rep' + rep + "/X_train_all_chr_MinMax_cov_MinMax.pkl"
-    union_test_gene_output_file = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_test_1k_chunks_PCA_dim_remove_no_missing/rep'+rep+"/X_test_all_chr_MinMax_cov_MinMax.pkl"
-
-file_name_end="_MinMax_scaled.pkl"
-
-#train
-print('train')
-join(X_train_name_beginning, chunk_size, union_train_gene_output_file, cov_df,file_name_end)
-
-#test
-print('test')
-join(X_test_name_beginning, chunk_size, union_test_gene_output_file, cov_df,file_name_end)
+    join(input_files_dir, chunk_size, output_file_name, cov_df)
+    
