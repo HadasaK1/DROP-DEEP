@@ -72,6 +72,7 @@ def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs
             model.save(save_to,num_epochs_to)
         loss.extend(history.history['loss'])
         val_loss.extend(history.history['val_loss'])
+        
     plot_loss(loss, val_loss, num_epochs_to, num_epochs_from)
     return model
     
