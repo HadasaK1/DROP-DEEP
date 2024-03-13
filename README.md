@@ -7,7 +7,9 @@ Steps 3 and 5 should be to be done o the training set and the test set separatel
 1.	The first step is to create the plink bed, bim, fam files, filter the samples and the SNPs according to your pre-processing parameters. Splite here your bed files to training and test files in order to train your NN. 
 
 2.	Create covariant matrix.
-   the covarient matrix has to be MinMax scaled. the two first columns has to be "FID' and "IID"
+
+  	the covarient matrix has to be MinMax scaled. 
+   The two first columns has to be "FID' and "IID".
 
 4.	If you have large data frame, you have to split your data to chanks, and to load each time around 1000 samples:
 
@@ -27,7 +29,7 @@ Steps 3 and 5 should be to be done o the training set and the test set separatel
 
 8.	Join the 22 chromosomes to one cohort:
    
-      Python3 join_all_chr_after_dr.py PCA
+      Python3 join_all_chr_after_dr.py cov_file input_files_dir merged_output_file_name
 
 9.	Validate that the samples in your phenotypes file are exactly the same in the features file.
 
