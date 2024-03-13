@@ -5,6 +5,8 @@ steps 1-6 should be to be done for each of the chromosomes separately.
 Steps 3, 5, 7 should be to be done o the training set and the test set separately. 
 Step 6 is for the training and the test set together.
 
+
+
 1.	The first step is to create the plink bed, bim, fam files, filter the samples and the SNPs according to your pre-processing parameters. Splite here your bed files to training and test files in order to train your NN. 
 
 2.	Create covariant matrix and phenotype file.
@@ -16,16 +18,17 @@ Step 6 is for the training and the test set together.
     ```
       python3 split_each_chr_to_chunks.py plink_file_name_no_suffix output_chancks_file_name
      ```
-
-4.	Download the PCA transformers files from this link:
+  	
+5.	Download the PCA transformers files from this link:
 
          https://drive.google.com/drive/folders/1oukhU_B4nM5kH9z2BxC81Kfn4kp05JAm?usp=drive_link
    
-5.	 Applay our PCA transformer on your data:
+6.	 Applay our PCA transformer on your data:
    
        ```
       python3 PCA_dimension_reduction.py chanks_file output_pca_file pca_transformer
   	  ```
+       
 
 7.	Scale the PCA data (MinMax scale):
       ```
