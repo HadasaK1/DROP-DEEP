@@ -37,9 +37,11 @@ Step 6 is for the training and the test set together.
       Python3 join_all_chr_after_dr.py cov_file input_files_dir merged_output_file_name
       ```
 
-7.	Validate that the samples in your phenotypes file are exactly the same in the features file.
-
-8.	Run NN on the PCA features.
+7.	Match the phenotype files (the Y files) to the feature files (the X files).
+      ```
+      Python3 match_pheno_IDs.py cov_file input_files_dir merged_output_file_name
+      ```
+9.	Run NN on the PCA features.
 
    for binary phenotypes:
       ```
