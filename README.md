@@ -45,9 +45,9 @@ Step 6 is for the training and the test set together.
 
    for binary phenotypes:
       ```
-      python3 NN_for_binary_pheno.py
+      python3 NN_for_binary_pheno.py X_train_chunks_file X_test_chunks_file y_train_chunks_file y_test_file output_path pheno_name
       ```
     for continues phenotypes:
     ```
-      python3 NN_for_linear_pheno.py
+      python3 NN_for_linear_pheno.py X_train_chunks_file X_test_chunks_file y_train_chunks_file y_test_file output_path pheno_name
     ```
