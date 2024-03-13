@@ -23,7 +23,7 @@ def match(x_file_name, pheno_df, x_output_file):
                     print('number_samples =',number_samples)
                     break
                 
-def split_y_train_to_chunks(y_output_file, pheno_df, x_chunk_file, pheno_name):
+def split_y_train_to_chunks(y_output_file, pheno_df, x_chunk_file):
     with open(y_output_file, 'wb') as y_file_handle:
        with open(x_chunk_file, 'rb') as x_file_handle:
            while True:
@@ -38,7 +38,7 @@ def split_y_train_to_chunks(y_output_file, pheno_df, x_chunk_file, pheno_name):
                except EOFError:
                    break
                                
-def split_test_y_to_chunks(input_df, x_chunk_file, pheno_name):
+def split_test_y_to_chunks(input_df, x_chunk_file):
     pheno_df = pd.DataFrame()
     with open(x_chunk_file, 'rb') as x_file_handle:
         while True:
@@ -52,82 +52,39 @@ def split_test_y_to_chunks(input_df, x_chunk_file, pheno_name):
             except EOFError:
                 return pheno_df
 
-pheno_name=sys.argv[1]
-rep=sys.argv[2]
-type=sys.argv[3]
-DRM = sys.argv[4]
+pheno_file=sys.argv[1]
+train_X_files=sys.argv[2]
+test_X_files=sys.argv[3]
+output_path=sys.argv[4]
+
 # handle phenotypes dataframe
-
-pheno_file=pheno_name.lower()
-
-
-pheno = pd.read_csv("/sise/nadav-group/nadavrap-group/UKBB/phenotypes/"+pheno_file, sep='\t')
+pheno = pd.read_csv(pheno_file, sep='\t')
 if (pheno.shape[1]==1):
-        pheno = pd.read_csv("/sise/nadav-group/nadavrap-group/UKBB/phenotypes/"+pheno_file, sep=' ')
+        pheno = pd.read_csv(pheno_file, sep=' ')
     
-#pheno = pd.read_csv("/sise/nadav-group/nadavrap-group/UKBB/phenotypes/"+pheno_file)
 pheno.rename(columns={"#FID":"FID"},inplace=True)
-
-print(pheno)
 
 pheno['FID']=pheno['FID'].astype(str)
 pheno = pheno.iloc[:,[0,2]]
 pheno = pheno.dropna(axis=0).reset_index(drop=True)
-print(pheno)
 
-if type=='b':
+x_train_output_file = output_path+"/X_train_match_to_pheno_MinMax_cov_MinMax.pkl"
+x_test_output_file = output_path+"/X_test_match_to_pheno_MinMax_cov_MinMax.pkl"
 
-    print(pheno.iloc[:, 1])
-    pheno.iloc[:, 1] = pheno.iloc[:, 1].replace([1], "0")
-    pheno.iloc[:, 1] = pheno.iloc[:, 1].replace([2], "1")
-    print(pheno)
+y_train_output_file = output_path+"/Y_train_match_to_X_file.pkl"
+y_test_output_file = output_path+"/Y_test_match_to_X_file.pkl"
 
+match(train_X_files, pheno_file, x_train_output_file)
 
-if DRM == "PCA":
-
-    path = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/'
-    #train
-    union_train_gene =path+'X_train_1k_chunks_PCA_dim_remove_no_missing/rep'+rep+"/X_train_all_chr_MinMax_cov_MinMax.pkl"
-    x_train_output_file = path+'X_train_1k_chunks_PCA_dim_remove_no_missing/rep'+rep+"/"+pheno_name+"_X_train_match_to_pheno_MinMax_cov_MinMax.pkl"
-    # test
-    union_test_gene = path+'X_test_1k_chunks_PCA_dim_remove_no_missing/rep' + rep + "/X_test_all_chr_MinMax_cov_MinMax.pkl"
-    x_test_output_file = path+"X_test_1k_chunks_PCA_dim_remove_no_missing/rep" + rep + "/" + pheno_name + "_X_test_match_to_pheno_MinMax_cov_MinMax.pkl"
-
-elif DRM == "Autoencoder":
-
-    path = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/"
-    #train
-    union_train_gene = path + "X_train_1k_chunks_dim_remove_no_missing_500_epochs/rep"+rep+"/X_train_all_chr_MinMax_cov_MinMax.pkl"
-    x_train_output_file = path + "X_train_1k_chunks_dim_remove_no_missing_500_epochs/rep"+rep+"/"+pheno_name+"_X_train_match_to_pheno_MinMax_cov_MinMax.pkl"
-    # test
-    union_test_gene = path+ "X_test_1k_chunks_dim_remove_no_missing_500_epochs/rep" + rep + "/X_test_all_chr_MinMax_cov_MinMax.pkl"
-    x_test_output_file = path+ "X_test_1k_chunks_dim_remove_no_missing_500_epochs/rep" + rep + "/" + pheno_name + "_X_test_match_to_pheno_MinMax_cov_MinMax.pkl"
-
-y_train_output_file = path+"Y_files/rep"+rep+"/"+pheno_name+"_Y_train_1k_chunks_no_missing.pkl"
-y_test_output_file = path+"Y_files/rep"+rep+"/"+pheno_name+"_Y_test_1k_chunks_no_missing.pkl"
-
-
-print('train')
-match(union_train_gene, pheno, x_train_output_file)
-
-##create Y_files directory
-if not os.path.exists(
-    path+"Y_files/rep"+rep):
-    os.makedirs(
-         path+"Y_files/rep"+rep)
-else:
-    print( "Y files directory existed for rep"+rep)
-
-
- #--------------------y train--------------------
-split_y_train_to_chunks(y_train_output_file, pheno, x_train_output_file, pheno_name)
+#--------------------y train--------------------
+split_y_train_to_chunks(y_train_output_file, pheno, x_train_output_file)
 #----------------------------------------
 
 print('test')
-match(union_test_gene, pheno, x_test_output_file)
+match(test_X_files, pheno, x_test_output_file)
 
 #--------------------y test--------------------
-test_pheno_df = split_test_y_to_chunks(pheno, x_test_output_file, pheno_name)
+test_pheno_df = split_test_y_to_chunks(pheno, x_test_output_file)
 test_pheno_df = test_pheno_df.reset_index(drop=True)
 test_pheno_df.to_pickle(y_test_output_file)
 #----------------------------------------
