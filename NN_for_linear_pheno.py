@@ -47,7 +47,7 @@ def build_model(batch,first_layer_units=0.2,second_layer_units=0.1,dropout=0.1,l
     number_snps = batch.shape[1]
     model = models.Sequential(name='NN')
     model.add(layer=layers.Dense(units=number_snps * first_layer_units, activation='relu',
-                                 input_shape=[number_snps]))  # relu for autoencoder, layers.PReLU() for PCA
+                                 input_shape=[number_snps]))  
     model.add(layers.Dropout(dropout))
     model.add(layer=layers.Dense(units=number_snps *second_layer_units, activation='relu'))  # relu for autoencoder, PReLU() for PCA
     model.add(layers.Dropout(dropout))
@@ -57,7 +57,7 @@ def build_model(batch,first_layer_units=0.2,second_layer_units=0.1,dropout=0.1,l
     return model
 
 
-def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs_to, X_val, y_val, pheno_name,
+def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs_to, X_val, y_val,
            model=None):
     loss = []
     val_loss = []
@@ -105,15 +105,15 @@ def fit_NN(x_train_chunks_file, y_train_chunks_file, num_epochs_from, num_epochs
             model.save(save_to, num_epochs_to)
         loss.extend(history.history['loss'])
         val_loss.extend(history.history['val_loss'])
-    plot_loss(loss, val_loss, num_epochs_to, num_epochs_from, pheno_name)
+    plot_loss(loss, val_loss, num_epochs_to, num_epochs_from)
     return model
 
 
-def plot_loss(loss, val_loss, num_epochs_to, num_epochs_from, pheno_name):
+def plot_loss(loss, val_loss, num_epochs_to, num_epochs_from):
     fig = plt.figure()
     plt.plot(loss)
     plt.plot(val_loss)
-    plt.title('SNP selection with DNN for ' + pheno_name)  # change!!!!!!!!!!!!!!!!!!!!!!
+    plt.title('DROP DEEP')
     plt.ylabel('Loss')
     plt.xlabel('Epoch')
     plt.legend(['Train', 'Validation'], loc='upper left')
@@ -155,32 +155,14 @@ import time
 import sys
 
 ###################################begining################
+###################################begining################
 start_time = time.time()
-pheno_name = sys.argv[1]
-rep = str(sys.argv[2])
-DRM = sys.argv[3]
-
-print (DRM)
-
-
-# files
-if DRM == "PCA":
-    # train
-    X_train_chunks_file = '/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_train_1k_chunks_PCA_dim_remove_no_missing/rep' + rep + "/" + pheno_name + "_X_train_match_to_pheno_MinMax_cov_MinMax.pkl"
-    X_test_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/X_test_1k_chunks_PCA_dim_remove_no_missing/rep" + rep + "/" + pheno_name + "_X_test_match_to_pheno_MinMax_cov_MinMax.pkl"
-    y_train_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/Y_files/rep" + rep + "/" + pheno_name + "_Y_train_1k_chunks_no_missing.pkl"
-    y_test_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/PCA/Y_files/rep" + rep + "/" + pheno_name + "_Y_test_1k_chunks_no_missing.pkl"
-    output_path = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/NN_with_PCA/" + pheno_name + "/rep" + rep + "/NN_0.2_0.1_dropout_0.1_relu_Adam0.0000001_batch_size_50_genes_MinMax_cov_MinMax/"
-
-
-
-if DRM == "Autoencoder":
-    print("Autoencoder")
-    X_train_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/X_train_1k_chunks_dim_remove_no_missing_500_epochs/rep" + rep + "/" + pheno_name + "_X_train_match_to_pheno_MinMax_cov_MinMax.pkl"
-    X_test_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/X_test_1k_chunks_dim_remove_no_missing_500_epochs/rep" + rep + "/" + pheno_name + "_X_test_match_to_pheno_MinMax_cov_MinMax.pkl"
-    y_train_chunks_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/Y_files/rep" + rep + "/" + pheno_name + "_Y_train_1k_chunks_no_missing.pkl"
-    y_test_file = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/our_model/Autoencoder/Y_files/rep" + rep + "/" + pheno_name + "_Y_test_1k_chunks_no_missing.pkl"
-    output_path = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/NN_with_Autoencoder/" + pheno_name + "/rep" + rep + "/NN_0.2_0.1_dropout_0.1_relu_Adam0.0000001_batch_size_50_genes_MinMax_cov_MinMax/"
+X_train_chunks_file = sys.argv[1]
+X_test_chunks_file= sys.argv[2]
+y_train_chunks_file= sys.argv[3]
+y_test_file = sys.argv[4]
+output_path = sys.argv[5]
+pheno_name = sys.argv[6]
 
 if not os.path.exists(output_path):
     os.makedirs(output_path)
@@ -191,20 +173,25 @@ else:
 val_size = 1000
 num_of_epochs=80
 
-X_val, y_val = create_validation_set(X_train_chunks_file=X_train_chunks_file,
-                                     y_train_chunks_file=y_train_chunks_file)
-model = fit_NN(x_train_chunks_file=X_train_chunks_file,
-               y_train_chunks_file=y_train_chunks_file,
-               num_epochs_from=1,
-               num_epochs_to=num_of_epochs,
-               X_val=X_val,
-               y_val=y_val,
-               pheno_name=pheno_name,
-               model=None)
+
+
+X_val, y_val = create_validation_set(X_train_chunks_file = X_train_chunks_file,
+                                     y_train_chunks_file = y_train_chunks_file)
+
+model = fit_NN(x_train_chunks_file = X_train_chunks_file,
+               y_train_chunks_file = y_train_chunks_file,
+               num_epochs_from = 1,
+               num_epochs_to = num_of_epochs,
+               X_val = X_val,
+               y_val = y_val,
+               start_time = start_time,
+               model = None)
+
+if not os.path.exists(output_path):
 
 # -----------for predict only----------
 # load NN model
-# model_name = "/home/hochyard/my_model/autoencoder/autoencoder_models_5_layers_prelu_act_no_cov_adam0.00001_batch_size250/height_pheno/NN/NN_0.2_dropout_0.1_dropout_relu_Adam0.0000001_batch_size_50_genes_MinMax_scaled_cov_MinMax_scaled_no_40_PCA/80"
+# model_name = output_path+"/NN_0.2_dropout_0.1_dropout_relu_Adam0.0000001_batch_size_50_genes_MinMax_scaled_cov_MinMax_scaled_no_40_PCA/80"
 # model = keras.models.load_model(model_name)
 
 #------------predict-------------------
