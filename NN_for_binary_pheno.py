@@ -151,7 +151,7 @@ model = fit_NN(x_train_chunks_file = X_train_chunks_file,
 
 #-----------for predict only----------
 #load NN model
-#model_name = "/sise/nadav-group/nadavrap-group/hadasa/my_storage/impoving_PRS/data/NN_with_snp_selection/predictions/"+pheno_name+"/NN_0.2_dropout_0.1_dropout_relu_Adam0.0000001_batch_size_50_genes_MinMax_cov_MinMax/80"
+#model_name = output_path+"/NN_0.2_dropout_0.1_dropout_relu_Adam0.0000001_batch_size_50_genes_MinMax_cov_MinMax/80"
 #model = keras.models.load_model(model_name)
 
 #-----------predict---------------
