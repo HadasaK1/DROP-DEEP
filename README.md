@@ -1,17 +1,17 @@
 # DRIP: Dimensionality Reduction Informs Polygenic Scoring
 
-DRIP is a two-stage framework for polygenic risk prediction that combines:
+DRIP is a scalable framework for polygenic prediction that combines:
 
 1. **Phenotype-agnostic dimensionality reduction**
-2. **Phenotype-specific machine learning prediction**
+2. **Incremental machine learning prediction models**
 
-Unlike conventional GWAS-based PRS pipelines, DRIP avoids supervised SNP selection and instead learns compact genomic representations directly from genotype data.
+The framework was designed for large-scale genomic datasets and was evaluated using UK Biobank genotype and phenotype data.
 
-The method was evaluated on UK Biobank data across multiple binary and continuous phenotypes and demonstrated competitive predictive performance with substantially reduced computational runtime.
+Unlike conventional PRS pipelines based on GWAS-derived SNP selection, DRIP learns compressed genomic representations directly from genotype matrices using unsupervised dimensionality reduction methods such as PCA and autoencoders.
 
 ---
 
-## Paper
+# Paper
 
 **DRIP: Dimensionality Reduction Informs Polygenic Scoring**  
 Hadasa Kaufman, Yarden Hochenberg, Michal Linial, Nadav Rappoport
@@ -20,53 +20,155 @@ Preprint / publication link: TBD
 
 ---
 
-## Overview
+# Overview
 
-The DRIP framework consists of two stages:
+The DRIP pipeline consists of several stages:
 
-### Stage 1 — Dimensionality Reduction
+## 1. Chromosome-wise dimensionality reduction
 
-Genome-wide SNP data are compressed using:
-- Principal Component Analysis (PCA)
-- Autoencoders
+For each chromosome independently:
 
-The dimensionality reduction step is phenotype-independent and can therefore be reused across multiple traits.
+- SNP matrices are split into manageable chunks
+- PCA or autoencoders are trained on training individuals
+- Learned representations are projected onto train and test sets
 
-### Stage 2 — Prediction Models
-
-Reduced genomic representations are used as input for:
-- Logistic / Linear Regression
-- XGBoost
-- Deep Neural Networks
+This design allows DRIP to scale to hundreds of thousands of individuals and hundreds of thousands of SNPs.
 
 ---
 
-## Repository Structure
+## 2. Genome-wide representation assembly
+
+Chromosome-specific representations are:
+- concatenated,
+- merged with covariates,
+- matched to phenotype-specific cohorts.
+
+---
+
+## 3. Incremental phenotype prediction
+
+Prediction models are trained incrementally using chunked genomic representations:
+
+### Binary phenotypes
+- Incremental Logistic Regression (`SGDClassifier`)
+
+### Continuous phenotypes
+- Incremental Linear Regression (`SGDRegressor`)
+
+Supported dimensionality reduction methods:
+- PCA
+- Autoencoder embeddings
+
+---
+
+# Repository Structure
 
 ```text
-data_processing/         Quality control and phenotype creation
-dimensionality_reduction/ PCA and autoencoder pipelines
-prediction_models/       ML prediction models
-baseline_methods/        PRSice-2, PRS-CS, lassosum comparisons
-figures/                 Paper figures
-notebooks/               Reproducible notebooks
-scripts/                 SLURM/bash execution scripts
-configs/                 Hyperparameter and path configuration
+DRIP/
+│
+├── README.md
+├── requirements.txt
+├── LICENSE
+│
+├── dimensionality_reduction/
+│   ├── PCA/
+│   └── autoencoder/
+│
+├── phenotype_processing/
+│
+├── prediction_models/
+│   ├── logistic_regression/
+│   └── linear_regression/
+│
+├── covariate_processing/
+│
+├── scripts/
+│
+├── notebooks/
+│
+└── figures/
 ```
 
 ---
 
-## Data Availability
+# Main Components
 
-UK Biobank data are available through application to the UK Biobank.
+## PCA Dimensionality Reduction
 
-Due to UK Biobank restrictions, genotype and phenotype data are not distributed in this repository.
+Main functionality:
+- chromosome-wise PCA fitting,
+- incremental transformation of chunked genotype matrices,
+- reconstruction quality evaluation using variance explained and R².
+
+Key features:
+- scalable chunk-based processing,
+- train/test separation,
+- reusable pretrained PCA transformers.
+
+---
+
+## Incremental Logistic Regression
+
+Binary phenotype prediction using:
+
+```python
+SGDClassifier(loss='log_loss')
+```
+
+Features:
+- chunk-wise training using `partial_fit`,
+- scalable to very large cohorts,
+- validation monitoring using log loss,
+- ROC-AUC and average precision evaluation.
+
+---
+
+## Incremental Linear Regression
+
+Continuous phenotype prediction using:
+
+```python
+SGDRegressor(loss='squared_error')
+```
+
+Features:
+- chunk-wise incremental learning,
+- mean squared error tracking,
+- R² evaluation.
+
+---
+
+## Phenotype Matching Pipeline
+
+The repository includes utilities for:
+- matching genotype representations to phenotype cohorts,
+- generating chunked target files,
+- maintaining consistent individual ordering across train/test sets.
+
+---
+
+## Covariate Integration
+
+Chromosome-specific reduced representations are merged with:
+- demographic covariates,
+- principal covariates,
+- additional phenotype metadata.
+
+---
+
+# Data Availability
+
+This project uses genotype and phenotype data from the UK Biobank.
+
+Due to UK Biobank restrictions, raw genotype and phenotype files are not distributed in this repository.
+
+UK Biobank: https://www.ukbiobank.ac.uk/
 
 Application ID used in this study: 26664.
 
 ---
 
-## Pretrained PCA Transformers
+# Pretrained PCA Transformers
 
 Pretrained chromosome-specific PCA transformers used in the manuscript are available at:
 
@@ -81,9 +183,11 @@ rep1/
   ...
 ```
 
+These transformers can be directly used to project new genotype matrices into the DRIP latent representation space.
+
 ---
 
-## Installation
+# Installation
 
 Clone the repository:
 
@@ -100,55 +204,116 @@ pip install -r requirements.txt
 
 ---
 
-## Running DRIP
+# Required Python Packages
 
-### 1. Quality control
+Main dependencies include:
 
-```bash
-bash scripts/run_qc.sh
-```
-
-### 2. Train PCA transformers
-
-```bash
-bash scripts/run_pca.sh
-```
-
-### 3. Generate reduced genomic representations
-
-```bash
-bash scripts/run_projection.sh
-```
-
-### 4. Train prediction models
-
-```bash
-bash scripts/run_lr.sh
+```text
+numpy
+pandas
+scikit-learn
+matplotlib
+pickle5
+pandas-plink
+scipy
+xgboost
+tensorflow
 ```
 
 ---
 
-## Hardware Requirements
+# Example Pipeline
+
+## Step 1 — Train PCA transformers
+
+```bash
+python PCA_train.py <chromosome> <rep>
+```
+
+---
+
+## Step 2 — Transform genotype chunks
+
+```bash
+python PCA_transform.py <chromosome> <rep>
+```
+
+---
+
+## Step 3 — Merge chromosome representations
+
+```bash
+python join_chromosomes.py PCA <rep>
+```
+
+---
+
+## Step 4 — Match phenotypes
+
+```bash
+python match_phenotype.py <phenotype> <type> PCA
+```
+
+Where:
+- `type = b` for binary phenotype
+- `type = c` for continuous phenotype
+
+---
+
+## Step 5 — Train prediction model
+
+### Logistic regression
+
+```bash
+python LogisticRegression_incremental.py <phenotype> <rep> PCA
+```
+
+### Linear regression
+
+```bash
+python LinearRegression_incremental.py <phenotype> <rep> PCA
+```
+
+---
+
+# Scalability
+
+DRIP was specifically designed for large-scale genomic datasets.
+
+The framework supports:
+- chunk-wise processing,
+- incremental learning,
+- chromosome-wise decomposition,
+- memory-efficient model fitting.
+
+This allows analyses on:
+- hundreds of thousands of individuals,
+- hundreds of thousands of SNPs,
+- limited-memory compute environments.
+
+---
+
+# Hardware Used
 
 Experiments were conducted using:
 - UK Biobank genotype data
 - ~342k individuals
 - ~467k SNPs
-- RTX6000 GPU (58GB RAM) for autoencoders
-- High-memory CPU nodes for PCA and GWAS analyses
+- High-memory CPU nodes
+- RTX6000 GPU (for autoencoder experiments)
 
 ---
 
-## Main Findings
+# Main Findings
 
-- DRIP achieves predictive performance comparable to state-of-the-art PRS methods
-- PCA-based reduction outperformed more complex autoencoder approaches
-- DRIP substantially reduces computational runtime
-- The framework generalizes across diverse phenotypes
+- DRIP achieved predictive performance comparable to standard PRS approaches
+- PCA-based representations consistently performed strongly
+- Incremental learning enabled scalable training on UK Biobank-scale data
+- Phenotype-agnostic genomic representations generalized across multiple traits
 
 ---
 
-## Citation
+# Citation
 
 If you use this repository, please cite:
 
@@ -156,17 +321,17 @@ If you use this repository, please cite:
 @article{kaufman2026drip,
   title={DRIP: Dimensionality Reduction Informs Polygenic Scoring},
   author={Kaufman, Hadasa and Hochenberg, Yarden and Linial, Michal and Rappoport, Nadav},
-  journal={},
   year={2026}
 }
 ```
 
 ---
 
-## Contact
+# Contact
 
 Hadasa Kaufman  
 The Hebrew University of Jerusalem
 
-For questions or collaborations:  
+For questions or collaborations:
+
 hadasa.kaufman@mail.huji.ac.il
