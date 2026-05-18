@@ -1,60 +1,118 @@
-# DROP-DEEP
-DROP-DEEP is a polygenic risk score tool that based on dimensionality reduction with principal component analysis (PCA) and a deep neural network prediction model (DNN).
+DRIP: Dimensionality Reduction Informs Polygenic Scoring
 
-steps 1-6 should be to be done for each of the chromosomes separately.
-Steps 3, 5, 7 should be to be done o the training set and the test set separately. 
-Step 6 is for the training and the test set together.
+DRIP is a two-stage framework for polygenic risk prediction that combines:
 
+Phenotype-agnostic dimensionality reduction
+Phenotype-specific machine learning prediction
 
+Unlike conventional GWAS-based PRS pipelines, DRIP avoids supervised SNP selection and instead learns compact genomic representations directly from genotype data.
 
-1.	The first step is to create the plink bed, bim, fam files, filter the samples and the SNPs according to your pre-processing parameters. Splite here your bed files to training and test files in order to train your NN. 
+The method was evaluated on UK Biobank data across multiple binary and continuous phenotypes and demonstrated competitive predictive performance with substantially reduced computational runtime.
 
-2.	Create covariant matrix and phenotype file.
+Paper
 
-   The covarient matrix has to be MinMax scaled. 
-   The two first columns of the covarient matrix and the phenotype file has to be "FID' and "IID".
+DRIP: Dimensionality Reduction Informs Polygenic Scoring
+Hadasa Kaufman, Yarden Hochenberg, Michal Linial, Nadav Rappoport
 
-3.	If you have large data frame, you have to split your data to chanks, and to load each time around 1000 samples:
-    ```
-      python3 split_each_chr_to_chunks.py plink_file_name_no_suffix output_chancks_file_name
-     ```
-  	
-5.	Download the PCA transformers files from this link:
+Preprint / publication link: TBD
 
-         https://drive.google.com/drive/folders/1oukhU_B4nM5kH9z2BxC81Kfn4kp05JAm?usp=drive_link
-   
-6.	 Applay our PCA transformer on your data:
-   
-       ```
-      python3 PCA_dimension_reduction.py chanks_file output_pca_file pca_transformer
-  	  ```
-       
+Overview
 
-7.	Scale the PCA data (MinMax scale):
-      ```
-      python3 scale_genes.py PCA_file_training_set PCA_file_test_set scaled_file_training_set scaled_file_test_set
-      ```
+The DRIP framework consists of two stages:
 
-8.	Join the 22 chromosomes to one cohort:
-      ```
-      Python3 join_all_chr_after_dr.py cov_file input_files_dir merged_output_file_name
-      ```
+Stage 1 — Dimensionality Reduction
 
-7.	Match the phenotype files (the Y files) to the feature files (the X files).
-      ```
-      Python3 match_pheno_IDs.py pheno_file train_X_files test_X_files output_path
-      ```
-9.	Run NN on the PCA features.
+Genome-wide SNP data are compressed using:
 
-  for binary phenotypes:
-   
-      ```
-      python3 NN_for_binary_pheno.py X_train_chunks_file X_test_chunks_file y_train_chunks_file y_test_file output_path pheno_name
-      
-      ```
-  for continues phenotypes:
-    
-    ```
-      python3 NN_for_linear_pheno.py X_train_chunks_file X_test_chunks_file y_train_chunks_file y_test_file output_path pheno_name
-      
-    ```
+Principal Component Analysis (PCA)
+Autoencoders
+
+The dimensionality reduction step is phenotype-independent and can therefore be reused across multiple traits.
+
+Stage 2 — Prediction Models
+
+Reduced genomic representations are used as input for:
+
+Logistic / Linear Regression
+XGBoost
+Deep Neural Networks
+Repository Structure
+data_processing/         Quality control and phenotype creation
+dimensionality_reduction/ PCA and autoencoder pipelines
+prediction_models/       ML prediction models
+baseline_methods/        PRSice-2, PRS-CS, lassosum comparisons
+figures/                 Paper figures
+notebooks/               Reproducible notebooks
+scripts/                 SLURM/bash execution scripts
+configs/                 Hyperparameter and path configuration
+Data Availability
+
+UK Biobank data are available through application to the
+UK Biobank.
+
+Due to UK Biobank restrictions, genotype and phenotype data are not distributed in this repository.
+
+Application ID used in this study: 26664.
+
+Pretrained PCA Transformers
+
+Pretrained chromosome-specific PCA transformers used in the manuscript are available at:
+
+[Google Drive / Zenodo link]
+
+Example structure:
+
+rep1/
+  PCA_transformer_1.pkl
+  PCA_transformer_2.pkl
+  ...
+Installation
+
+Clone the repository:
+
+git clone https://github.com/nadavlab/DRIP.git
+cd DRIP
+
+Install dependencies:
+
+pip install -r requirements.txt
+Running DRIP
+1. Quality control
+bash scripts/run_qc.sh
+2. Train PCA transformers
+bash scripts/run_pca.sh
+3. Generate reduced genomic representations
+bash scripts/run_projection.sh
+4. Train prediction models
+bash scripts/run_lr.sh
+Hardware Requirements
+
+Experiments were conducted using:
+
+UK Biobank genotype data
+~342k individuals
+~467k SNPs
+RTX6000 GPU (58GB RAM) for autoencoders
+High-memory CPU nodes for PCA and GWAS analyses
+Main Findings
+DRIP achieves predictive performance comparable to state-of-the-art PRS methods
+PCA-based reduction outperformed more complex autoencoder approaches
+DRIP substantially reduces computational runtime
+The framework generalizes across diverse phenotypes
+Citation
+
+If you use this repository, please cite:
+
+@article{kaufman2026drip,
+  title={DRIP: Dimensionality Reduction Informs Polygenic Scoring},
+  author={Kaufman, Hadasa and Hochenberg, Yarden and Linial, Michal and Rappoport, Nadav},
+  journal={},
+  year={2026}
+}
+Contact
+
+Hadasa Kaufman
+The Hebrew University of Jerusalem
+
+For questions or collaborations:
+hadasa.kaufman@mail.huji.ac.il
